@@ -8,7 +8,7 @@ const tmi = require('tmi.js');
 const EventEmitter = require('events');
 
 const stopsong = new EventEmitter();
-
+const regexConst = new RegExp('^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$');
 var songlists=[];
 
 console.log("start playback");
@@ -28,17 +28,19 @@ const client = new tmi.Client({
 client.connect();
 
 
+
+const streamer = new Streamer.default();
+
+
 async function playmusic(lagunya){
 	let promise = new Promise((resolve, reject) => 
 	{
+		console.log("aduh")
 		var speaker = new Speaker({
 			channels: 2,
 			bitDepth: 16,
 			sampleRate: 44100
 		});
-
-
-		var streamer = new Streamer.default();
 		streamer.stream(ytdl(lagunya, { filter: format => format.container === 'mp4' })).pipe(speaker);
 		speaker.on('flush', function()
 		{
@@ -98,7 +100,8 @@ playqueue()
 
 client.on('message', (channel, tags, message, self) => {
 	// console.log(`${tags['display-name']}: ${message}`);
-	var regexConst = new RegExp('^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$');
+
+	
 
 	if(message.toLowerCase() === "hello")
 	{
