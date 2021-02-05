@@ -3,13 +3,16 @@ require('dotenv').config()
 const Streamer = require("musix-streamer");
 const ytdl = require("ytdl-core");
 const Speaker = require("speaker");
+const owoify = require('owoify-js').default
 var async = require('async');
 const tmi = require('tmi.js');
 const EventEmitter = require('events');
 
 const stopsong = new EventEmitter();
 const regexConst = new RegExp('^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$');
+
 var songlists=[];
+var uwutime=true;
 
 console.log("start playback");
 
@@ -59,17 +62,15 @@ async function playmusic(lagunya){
 
 };
 
-function waitqueue(ms) {
+function waiting(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-
 
 async function playqueue(){
 	// await playmusic("https://www.youtube.com/watch?v=__1SjDrSMik");
 	while(true)
 	{
-		await waitqueue(1000);
+		await waiting(1000);
 		console.log(songlists.length)
 		if(songlists.length>0)
 		{
@@ -94,16 +95,37 @@ async function playqueue(){
 	}
 }
 
-songlists.push("https://www.youtube.com/watch?v=BHsLOoXfqtY")
+async function uwucooldown(){
+	while(true)
+	{
+		await waiting(10000);
+		if(uwutime === false)
+		{
+			uwutime=true;
+		}
+	}
+}
+
+
+
+
+// songlists.push("https://www.youtube.com/watch?v=BHsLOoXfqtY")
 playqueue()
+uwucooldown()
 
 
 client.on('message', (channel, tags, message, self) => {
 	// console.log(`${tags['display-name']}: ${message}`);
-
 	
+	if(self)return;
 
-	if(message.toLowerCase() === "hello")
+	if(uwutime===true)
+	{
+		uwutime=false;
+		client.say(channel, owoify(message, 'uwu'));
+	}
+
+	if(message.toLowerCase() === "!hello")
 	{
 		client.say(channel, `@${tags.username}, heya!`);
 	}
@@ -111,7 +133,7 @@ client.on('message', (channel, tags, message, self) => {
 	{
 		console.log("someone stopped");
 		stopsong.emit('stop');
-	} 
+	}
 
 	if(regexConst.test(message)) 
 	{
