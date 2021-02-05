@@ -5,6 +5,9 @@ const ytdl = require("ytdl-core");
 const Speaker = require("speaker");
 var async = require('async');
 const tmi = require('tmi.js');
+const EventEmitter = require('events');
+
+const stopsong = new EventEmitter();
 
 var songlists=[];
 
@@ -39,7 +42,11 @@ async function playmusic(lagunya){
 		streamer.stream(ytdl(lagunya, { filter: format => format.container === 'mp4' })).pipe(speaker);
 		speaker.on('flush', function()
 		{
-			// console.log("kekw");
+			resolve(true);
+		});
+
+		stopsong.on('stop', function(){
+			speaker.close()
 			resolve(true);
 		});
 	}
@@ -90,14 +97,22 @@ playqueue()
 
 
 client.on('message', (channel, tags, message, self) => {
-	console.log(`${tags['display-name']}: ${message}`);
+	// console.log(`${tags['display-name']}: ${message}`);
+	var regexConst = new RegExp('^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$');
+
 	if(message.toLowerCase() === "hello")
 	{
 		client.say(channel, `@${tags.username}, heya!`);
-	} 
-	else 
+	}
+	if(message.toLowerCase() === "stop")
 	{
-		console.log("SBUAIDHBASUIDBSUAI");
+		console.log("someone stopped");
+		stopsong.emit('stop');
+	} 
+
+	if(regexConst.test(message)) 
+	{
+		// console.log("SBUAIDHBASUIDBSUAI");
 		if(ytdl.getURLVideoID(message))
 		{
 			console.log("VideoID valid");
@@ -116,6 +131,6 @@ client.on('message', (channel, tags, message, self) => {
 		{
 			console.log("not valid");		
 		}
+	}
 
-  	}
 });
