@@ -83,7 +83,7 @@ async function playqueue(){
 	// await playmusic("https://www.youtube.com/watch?v=__1SjDrSMik");
 	while(true)
 	{
-		await waiting(1000);
+		await waiting(3000);
 		if(songlists.length>0)
 		{
 			var cursong = songlists.shift()
@@ -93,12 +93,22 @@ async function playqueue(){
 		{
 			console.log("queue empty, playing from playlist")
 			// console.log(playlist)
-			var cursong = playlist[Math.floor(Math.random() * playlist.length)];
-			const index = playlist.indexOf(cursong);
-			if (index > -1) {
-  				playlist.splice(index, 1);
+			if(playlist.length==0)
+			{
+				console.log("playlist empty, please restart app or wait for someone to add to the queue")
 			}
-			await playmusic(cursong);
+			else
+			{
+				var cursong = playlist[Math.floor(Math.random() * playlist.length)];
+				const index = playlist.indexOf(cursong);
+				if (index > -1) {
+  					playlist.splice(index, 1);
+				}
+				await playmusic(cursong);
+			}
+
+
+			
 			// console.log(playlist)
 		}
 		//todo make this play rasheed playlist
@@ -124,10 +134,9 @@ async function uwucooldown(){
 console.log("parsing playlist");
 addplaylist()
 console.log("parsing done");
-client.connect();
 playqueue()
 uwucooldown()
-
+client.connect();
 
 client.on('chat', (channel, tags, message, self) => {
 	if(self)return;
@@ -138,6 +147,7 @@ client.on('chat', (channel, tags, message, self) => {
 		if (ytdl.validateURL(message))
 		{
 			songlists.push(message);
+			client.say(channel, "song added to queue");
 		}
 		else
 		{
@@ -164,7 +174,7 @@ client.on('chat', (channel, tags, message, self) => {
 
 	if(message.toLowerCase() === "!about")
 	{
-		client.say(channel, `im a bot, ask @notrasheed for details and complain`);
+		client.say(channel, `im a bot, ask @daiya_o for details`);
 		return;
 	}
 
@@ -183,19 +193,5 @@ client.on('chat', (channel, tags, message, self) => {
 			return;
 		}
 
-	}
-
-	if (tags["custom-reward-id"] === process.env.SONG_REQUEST_REWARD_ID) {
-
-		if (ytdl.validateURL(message))
-		{
-			songlists.push(message);
-		}
-		else
-		{
-			console.log("VideoID not valid");
-			client.say(channel, "that is not a valid youtube URL, no refund");
-		}
-		return;
 	}
 });
