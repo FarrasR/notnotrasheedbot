@@ -13,9 +13,14 @@
     "async": "^3.2.0",
     "dotenv": "^8.2.0",
     "musix-streamer": "0.0.9",
+    "n-readlines": "^1.0.1",
     "owoify-js": "^1.0.7",
     "speaker": "^0.5.2",
     "tmi.js": "^1.7.1",
     "ytdl-core": "^4.4.5"
-  }
+  },
+  "devDependencies": {
+        "pkg": "^4.3.1"
+  },
+  "pkg" : { "assets": [".env"]}
 }

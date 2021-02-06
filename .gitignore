@@ -102,3 +102,8 @@ dist
 
 # TernJS port file
 .tern-port
+index-win.exe
+index-macos
+index-linux
+index.js
+playlist.txt
