@@ -1,25 +1,24 @@
 require('dotenv').config()
 
-const Streamer = require("musix-streamer");
-const ytdl = require("ytdl-core");
-const Speaker = require("speaker");
-const owoify = require('owoify-js').default
-var async = require('async');
-const tmi = require('tmi.js');
-const EventEmitter = require('events');
-const lineByLine = require('n-readlines');
+import { Streamer } from "musix-streamer";
+import ytdl, { validateURL } from "ytdl-core";
+import Speaker from "speaker";
+import owoify from 'owoify-js';
+import { Client } from 'tmi.js';
+import EventEmitter from 'events';
+import lineByLine from 'n-readlines';
 
 const stopsong = new EventEmitter();
-const regexConst = new RegExp('^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$');
 
+var playlist = [];
+var songlists = [];
+var uwutime = true;
 
-var playlist=[];
-var songlists=[];
-var uwutime=true;
-
-
-const client = new tmi.Client({
-	options: { debug: true, messagesLogLevel: "info" },
+const client = new Client({
+	options: { 
+		debug: true, 
+		messagesLogLevel: "info" 
+	},
 	connection: {
 		reconnect: true,
 		secure: true
@@ -31,39 +30,33 @@ const client = new tmi.Client({
 	channels: [ process.env.CHANNEL_NAME ]
 });
 
-
-
-
 const streamer = new Streamer.default();
 
-
-function addplaylist(){
-	const liner = new lineByLine('playlist.txt');
+function addplaylist() {
 	let line;
 	let lineNumber = 0;
+
+	const liner = new lineByLine('playlist.txt');
 	while (line = liner.next()) {
     	playlist.push(line.toString('ascii'));
     	lineNumber++;
 	}
 }
 
-
-
-async function playmusic(lagunya){
-	let promise = new Promise((resolve, reject) => 
-	{
+async function playmusic(lagunya) {
+	let promise = new Promise((resolve) => {
 		var speaker = new Speaker({
 			channels: 2,
 			bitDepth: 16,
 			sampleRate: 44100
 		});
+
 		streamer.stream(ytdl(lagunya, { filter: format => format.container === 'mp4' })).pipe(speaker);
-		speaker.on('flush', function()
-		{
+		speaker.on('flush', function() {
 			resolve(true);
 		});
 
-		stopsong.on('stop', function(){
+		stopsong.on('stop', function() {
 			speaker.close()
 			resolve(true);
 		});
@@ -72,57 +65,49 @@ async function playmusic(lagunya){
 
 	let result = await promise;
 	return result;
-
 };
 
 function waiting(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function playqueue(){
-	// await playmusic("https://www.youtube.com/watch?v=__1SjDrSMik");
-	while(true)
-	{
+async function playqueue() {
+	while(true) {
 		await waiting(3000);
-		if(songlists.length>0)
-		{
+
+		if (songlists.length > 0) {
 			var cursong = songlists.shift()
+
 			await playmusic(cursong);
 		}
-		else
-		{
+		else {
 			console.log("queue empty, playing from playlist")
-			// console.log(playlist)
-			if(playlist.length==0)
-			{
+
+			if (playlist.length == 0) {
 				console.log("playlist empty, please restart app or wait for someone to add to the queue")
 			}
-			else
-			{
+			else {
 				var cursong = playlist[Math.floor(Math.random() * playlist.length)];
 				const index = playlist.indexOf(cursong);
+
 				if (index > -1) {
   					playlist.splice(index, 1);
 				}
+
 				await playmusic(cursong);
 			}
-
-
-			
-			// console.log(playlist)
 		}
 		//todo make this play rasheed playlist
 	}
 }
 
-async function uwucooldown(){
-	while(true)
-	{
+async function uwucooldown() {
+	while(true) {
 		var waittime = Math.floor(Math.random() * 1800000) + 600000; 
 		await waiting(waittime);
-		if(uwutime === false)
-		{
-			uwutime=true;
+
+		if (!uwutime) {
+			uwutime = true;
 		}
 	}
 }
@@ -139,12 +124,10 @@ uwucooldown()
 client.connect();
 
 client.on('chat', (channel, tags, message, self) => {
-	if(self)return;
-
+	if (self) return;
 
 	if (tags["custom-reward-id"] === process.env.SONG_REQUEST_REWARD_ID) {
-
-		if (ytdl.validateURL(message))
+		if (validateURL(message))
 		{
 			songlists.push(message);
 			client.say(channel, "song added to queue");
@@ -154,13 +137,15 @@ client.on('chat', (channel, tags, message, self) => {
 			console.log("VideoID not valid");
 			client.say(channel, "that is not a valid youtube URL, no refund");
 		}
+
 		return;
 	}
 
-	if(uwutime===true)
+	if (uwutime)
 	{
-		uwutime=false;
+		uwutime = false;
 		client.say(channel, owoify(message, 'uwu'));
+
 		return;
 	}
 
@@ -172,24 +157,23 @@ client.on('chat', (channel, tags, message, self) => {
 	// 	return;
 	// }
 
-	if(message.toLowerCase() === "!about")
-	{
+	if (message.toLowerCase() === "!about") {
 		client.say(channel, `im a bot, ask @daiya_o for details`);
+
 		return;
 	}
 
-	if(message.toLowerCase() === "!stop")
-	{
-		if(tags["username"]==="notrasheed" || tags["username"]==="daiya_o")
-		{
+	if (message.toLowerCase() === "!stop") {
+		if (tags["username"] === "notrasheed" || tags["username"] === "daiya_o") {
 			console.log("someone IMPORTANT stopped");
 			client.say(channel, "stopping song");
 			stopsong.emit('stop');
+
 			return;
 		}
-		else
-		{
+		else {
 			client.say(channel, "you have no power here KEKW");
+
 			return;
 		}
 
